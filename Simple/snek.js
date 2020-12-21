@@ -1,3 +1,33 @@
+var xsize = 20;
+var ysize = 20;
+
+function generateRow(index, len) {
+    let row = document.createElement("tr");
+    for (let val = 0; val < len; val++) {
+        let name = "" + index + "," + val;
+        let dot = document.createElement("td");
+        dot.id = name;
+        row.appendChild(dot);
+    }
+    return row
+}
+function generateArea(id, x, y){
+    let loc = document.getElementById(id);
+    let area = document.createElement("table");
+    for (let val = 0; val < y; val++) {
+        area.appendChild(generateRow(val, x));
+    } 
+    loc.appendChild(area);
+}
+function parseY(m){
+    let c = m.indexOf(',') //"Y,X" 
+    return(m.substring(0, c))
+}
+function parseX(m){
+    let c = m.indexOf(',') //"Y,X" 
+    return(m.substring(c+1))
+}
+
 var movingLeft = false;
 var movingRight = true;
 var movingDown = false;
@@ -18,47 +48,43 @@ function turnDown(){
 
 var speed = 1;
 
-function coordinate(x, y){		
-    this.x = x;		
-    this.y = y;		
-}		
-var snake = [new coordinate(3, 3)];
-var food = [new coordinate(7, 7)];
+var snake = ["3,3"];
+var food = ["7,7"];
 
-function generatefood(){
-     let y = Math.round(Math.random() * 10);
-     let x = Math.round(Math.random() * 10);
-     food.push(new coordinate(x, y));
+function generatefood(xmax, ymax){
+    let y = Math.round(Math.random() * ymax);
+    let x = Math.round(Math.random() * xmax);
+    food.push(`${y},${x}`);
 }
 
 function growSnake(){
-     let head = snake[snake.length-1];
-     let y = head.y;
-     let x = head.x;
-     if (movingLeft){ x -= speed;}  
-     if (movingRight){ x += speed;}  
-     if (movingDown){ y += speed;}  
-     if (movingUp){ y -= speed;}
-     snake.push(new coordinate(x, y));
+    let head = snake[snake.length-1];
+    let y = parseInt(parseY(head));
+    let x = parseInt(parseX(head));
+    if (movingLeft){ x -= speed;}  
+    if (movingRight){ x += speed;}  
+    if (movingDown){ y += speed;}  
+    if (movingUp){ y -= speed;}
+    snake.push(`${y},${x}`);
 }
 
-function checkBounds(){
-     let head = snake[snake.length-1];
-     return (head.y > 14 || head.y < 0 || head.x > 14 || head.x < 0);
+function checkBounds(xmax, ymax){
+    let head = snake[snake.length-1];
+    if (head.indexOf("-")!==-1){ return true; }
+    let y = parseInt(parseY(head));
+    let x = parseInt(parseX(head));
+    if (x >= xmax || y >= ymax) { return true; }
+    return false;
 }
 
 function checkCollision(){
     let head = snake[snake.length-1];
     let body = snake.slice(0, snake.length-1);
     for (const coord of body) {
-        if(head.x == coord.x && head.y == coord.y){ return true;}
+        if(head === coord){ return true;}
     }
     return false;
 }
-
-const letternum = {
-    0: "a",1: "b",2: "c",3: "d",4: "e",5: "f",6: "g",7: "h",8: "i",9: "j",10: "k",11: "l",12: "m",13: "n",14: "o"
-};
 
 function drawSnake(){
     let dots = document.getElementsByClassName("head");
@@ -68,54 +94,40 @@ function drawSnake(){
     }
     let index = 1;
     for (const coord of snake) {
-        let id = `#${letternum[coord.y]}${letternum[coord.x]}`;
-        document.querySelector(id).style.backgroundColor = "green";
+        document.getElementById(coord).style.backgroundColor = "green";
         if (index == snake.length){
-            document.querySelector(id).className = "head";
-            if (movingLeft){
-                document.querySelector(id).innerHTML = "←";
-            }
-            if (movingRight){
-                document.querySelector(id).innerHTML = "→";
-            }
-            if (movingUp){
-                document.querySelector(id).innerHTML = "↑";
-            }
-            if (movingDown){
-                document.querySelector(id).innerHTML = "↓";
-            }
+            document.getElementById(coord).className = "head";
+            if (movingLeft){ document.getElementById(coord).innerHTML = "←"; }
+            if (movingRight){ document.getElementById(coord).innerHTML = "→"; }
+            if (movingUp){ document.getElementById(coord).innerHTML = "↑"; }
+            if (movingDown){ document.getElementById(coord).innerHTML = "↓"; }
         }
         index += 1;
     }
 }
 function drawFood(){
     for (const coord of food) {
-        let id = `#${letternum[coord.y]}${letternum[coord.x]}`;
-        document.querySelector(id).style.backgroundColor = "red";
+        document.getElementById(coord).style.backgroundColor = "red";
     }
 }
 function clear(){
-    document.querySelectorAll("td").forEach(function(td){
-        td.style.backgroundColor = "Transparent";
-    });
+    for (let dot of document.getElementsByTagName("td")){  
+        dot.style.backgroundColor = "Transparent";
+    }
 }
 
 var alive = true;
 
 function animate(){
     if (alive){
-        if (food.length == 0){ generatefood();}
+        if (food.length == 0){ generatefood(xsize-1, ysize-1);}
         let head = snake[snake.length-1];
         let fooditem = food[0];
-        if (head.x == fooditem.x && head.y == fooditem.y){ 
-            growSnake();
-            food.pop();
-        } else {
-            growSnake();
-            snake.shift();
-        }
-        if (checkBounds() || checkCollision()){
-            alive = false;
+        growSnake();
+        if (head == fooditem){ food.pop();
+        } else { snake.shift(); }
+        if (checkBounds(xsize, ysize) || checkCollision()){
+            alive = false;  
             alert("dead");
         } else {
             clear();
@@ -126,8 +138,8 @@ function animate(){
 }
 
 function reset(){
-    snake = [new coordinate(3, 3)];
-    food = [new coordinate(7, 7)];
+    snake = ["3,3"];
+    food = ["7,7"];
     movingLeft = false;
     movingRight = true;
     movingDown = false;
@@ -136,6 +148,7 @@ function reset(){
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    generateArea("root", xsize, ysize);
     setInterval(animate, 400);
 });
 

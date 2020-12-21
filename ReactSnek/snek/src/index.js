@@ -32,8 +32,8 @@ class Snake extends React.Component {
     this.setState({ movingLeft: false, movingRight: false, movingDown: true, movingUp: false, });
   }
   generatefood(){
-    let y = Math.round(Math.random() * this.props.y);
-    let x = Math.round(Math.random() * this.props.x);
+    let y = Math.round(Math.random() * (this.props.y - 1));
+    let x = Math.round(Math.random() * (this.props.x - 1));
     this.state.food.push(`${y},${x}`);
   }
   growSnake(){
@@ -93,11 +93,8 @@ class Snake extends React.Component {
       if (this.state.food.length === 0){ this.generatefood();}
       let head = this.state.snake[this.state.snake.length-1];
       this.growSnake();
-      if (head === this.state.food[0]){ 
-        this.state.food.pop();
-      } else {
-        this.state.snake.shift();
-      }
+      if (head === this.state.food[0]){ this.state.food.pop();
+      } else { this.state.snake.shift(); }
       this.checkBounds();        
       this.checkCollision();
       if (this.state.alive){
