@@ -62,7 +62,7 @@ const letternum = {
 
 function drawSnake(){
     let dots = document.getElementsByClassName("head");
-    for (dot of dots){  
+    for (let dot of dots){  
         dot.className = ""; 
         dot.innerHTML = "";
     }
